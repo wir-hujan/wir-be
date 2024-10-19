@@ -2,8 +2,8 @@
   "name": "wirausaha",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "start": "bun src/index.ts --target bun",
+    "build": "bun build src/index.ts --target bun"
   },
   "dependencies": {
     "@elysiajs/eden": "^1.1.3",
@@ -12,14 +12,21 @@
     "@faker-js/faker": "^9.0.3",
     "@prisma/client": "5.20.0",
     "arctic": "^1.9.2",
+    "aws-sdk": "^2.1691.0",
     "bcrypt": "^5.1.1",
     "elysia": "latest",
     "lucia": "^3.2.1",
+    "mock-aws-s3": "^4.0.2",
+    "nock": "^13.5.5",
     "pg": "^8.13.0"
   },
   "devDependencies": {
     "bun-types": "latest",
     "prisma": "^5.20.0"
   },
-  "module": "src/index.js"
+  "module": "src/index.js",
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
 }
