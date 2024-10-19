@@ -1,0 +1,257 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id_employee   Int        @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  employeename  String     @unique
+  password      String
+  fullname      String
+  location_id   Int
+  location      Location   @relation(fields: [location_id], references: [id_location])
+  products      Product[]
+  logstock      Logstock[]
+  Token         Token[]
+  Purchase      Purchase[]
+  module        Json
+  role_id       Int
+  role          Role       @relation(fields: [role_id], references: [id_role])
+
+  @@map("employee")
+}
+
+model Product {
+  id_product     Int              @id @default(autoincrement())
+  statusenabled  Boolean
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  productname    String
+  cdproduct      String
+  employee_id    Int
+  employee       Employee         @relation(fields: [employee_id], references: [id_employee])
+  productstock   Productstock[]
+  logstock       Logstock[]
+  sale           Sale[]
+  purchase       Purchase[]
+  unit_id        Int
+  unit           Unit             @relation(fields: [unit_id], references: [id_unit])
+  Unexpectedload Unexpectedload[]
+
+  @@map("product")
+}
+
+model Productstock {
+  id_productstock  Int           @id @default(autoincrement())
+  statusenabled    Boolean
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  location_id      Int
+  location         Location      @relation(fields: [location_id], references: [id_location])
+  stockproduct     Int
+  howbuy           Int
+  howsold          Int
+  product_id       Int
+  ppn              Float?
+  product          Product       @relation(fields: [product_id], references: [id_product])
+  wherepurchase_id Int
+  wherepurchase    Wherepurchase @relation(fields: [wherepurchase_id], references: [id_wherepurchase])
+  purchase         Purchase[]
+
+  @@map("productstock")
+}
+
+model Log {
+  id_log              Int                    @id @default(autoincrement())
+  statusenabled       Boolean
+  created_at          DateTime               @default(now())
+  updated_at          DateTime               @updatedAt
+  activityemployee_id Int
+  activityemployee    Activityemployeestatus @relation(fields: [activityemployee_id], references: [id_activityemployee])
+  location_id         Int
+  location            Location               @relation(fields: [location_id], references: [id_location])
+  description         String?
+
+  @@map("log")
+}
+
+model Logstock {
+  id_logstock         Int                    @id @default(autoincrement())
+  statusenabled       Boolean
+  created_at          DateTime               @default(now())
+  updated_at          DateTime               @updatedAt
+  location_id         Int
+  location            Location               @relation(fields: [location_id], references: [id_location])
+  activityemployee_id Int
+  activityemployee    Activityemployeestatus @relation(fields: [activityemployee_id], references: [id_activityemployee])
+  stockstart          Int
+  stockend            Int
+  description         String
+  in                  Int
+  out                 Int
+  product_id          Int
+  product             Product                @relation(fields: [product_id], references: [id_product])
+  employee_id         Int
+  employee            Employee               @relation(fields: [employee_id], references: [id_employee])
+
+  @@map("logstock")
+}
+
+model Location {
+  id_location   Int            @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  location      String
+  employee      Employee[]
+  log           Log[]
+  productstock  Productstock[]
+  logstock      Logstock[]
+  sale          Sale[]
+  purchase      Purchase[]
+
+  @@map("location")
+}
+
+model Activityemployeestatus {
+  id_activityemployee Int        @id @default(autoincrement())
+  statusenabled       Boolean
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
+  log                 Log[]
+  activityemployee    String
+  Logstock            Logstock[]
+
+  @@map("activityemployeestatus")
+}
+
+model Status {
+  id_status     Int      @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  status        String
+  code          Int
+
+  @@map("status")
+}
+
+model Role {
+  id_role       Int        @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  role          String
+  module        Json
+  Employee      Employee[]
+
+  @@map("role")
+}
+
+model Module {
+  id_module     Int      @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  module        String
+  url           String
+  description   String
+
+  @@map("module")
+}
+
+model Token {
+  id_token    Int      @id @default(autoincrement())
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  token       String
+  information Json
+  employee_id Int
+  employee    Employee @relation(fields: [employee_id], references: [id_employee])
+
+  @@map("token")
+}
+
+model Sale {
+  id_sale           Int      @id @default(autoincrement())
+  statusenabled     Boolean
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  product_id        Int
+  product           Product  @relation(fields: [product_id], references: [id_product])
+  location_id       Int
+  location          Location @relation(fields: [location_id], references: [id_location])
+  isborrow          Boolean
+  descriptionborrow String
+  qty               Int
+
+  @@map("sale")
+}
+
+model Purchase {
+  id_purchase     Int          @id @default(autoincrement())
+  statusenabled   Boolean
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  product_id      Int
+  product         Product      @relation(fields: [product_id], references: [id_product])
+  location_id     Int
+  location        Location     @relation(fields: [location_id], references: [id_location])
+  employee_id     Int
+  employee        Employee     @relation(fields: [employee_id], references: [id_employee])
+  productstock_id Int
+  productstock    Productstock @relation(fields: [productstock_id], references: [id_productstock])
+  qty             Int
+
+  @@map("purchase")
+}
+
+model Wherepurchase {
+  id_wherepurchase Int            @id @default(autoincrement())
+  statusenabled    Boolean
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  market           String
+  description      String
+  productstock     Productstock[]
+
+  @@map("wherepurchase")
+}
+
+model Unexpectedload {
+  id_unexpectedload Int      @id @default(autoincrement())
+  statusenabled     Boolean
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  description       String
+  how               Int
+  product_id        Int?
+  product           Product? @relation(fields: [product_id], references: [id_product])
+  qty               Int?
+
+  @@map("unexpectedload")
+}
+
+model Unit {
+  id_unit       Int       @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  unit          String
+  product       Product[]
+
+  @@map("unit")
+}
