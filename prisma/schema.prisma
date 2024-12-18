@@ -14,42 +14,49 @@ datasource db {
 }
 
 model Employee {
-  id_employee   Int        @id @default(autoincrement())
-  statusenabled Boolean
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
-  employeename  String     @unique
-  password      String
-  fullname      String
-  location_id   Int
-  location      Location   @relation(fields: [location_id], references: [id_location])
-  products      Product[]
-  logstock      Logstock[]
-  Token         Token[]
-  Purchase      Purchase[]
-  module        Json
-  role_id       Int
-  role          Role       @relation(fields: [role_id], references: [id_role])
+  id_employee    Int              @id @default(autoincrement())
+  statusenabled  Boolean
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  employeename   String           @unique
+  password       String
+  fullname       String
+  location_id    Int
+  location       Location         @relation(fields: [location_id], references: [id_location])
+  products       Product[]
+  logstock       Logstock[]
+  Token          Token[]
+  purchase       Purchase[]
+  employeemodule Employeemodule[]
+  role_id        Int
+  role           Role             @relation(fields: [role_id], references: [id_role])
+  Log            Log[]
 
   @@map("employee")
 }
 
+// pekerja role adalah role utama 
 model Product {
-  id_product     Int              @id @default(autoincrement())
-  statusenabled  Boolean
-  created_at     DateTime         @default(now())
-  updated_at     DateTime         @updatedAt
-  productname    String
-  cdproduct      String
-  employee_id    Int
-  employee       Employee         @relation(fields: [employee_id], references: [id_employee])
-  productstock   Productstock[]
-  logstock       Logstock[]
-  sale           Sale[]
-  purchase       Purchase[]
-  unit_id        Int
-  unit           Unit             @relation(fields: [unit_id], references: [id_unit])
-  Unexpectedload Unexpectedload[]
+  id_product       Int              @id @default(autoincrement())
+  statusenabled    Boolean
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+  productname      String
+  cdproduct        String
+  employee_id      Int
+  employee         Employee         @relation(fields: [employee_id], references: [id_employee])
+  productstock     Productstock[]
+  logstock         Logstock[]
+  sale             Sale[]
+  purchase         Purchase[]
+  shoponline       Boolean?
+  shoponlineactive Boolean?
+  shoponlineprice  Int?
+  shoponlinediscon Float?
+  unit_id          Int
+  unit             Unit             @relation(fields: [unit_id], references: [id_unit])
+  Unexpectedload   Unexpectedload[]
+  Log              Log[]
 
   @@map("product")
 }
@@ -65,6 +72,7 @@ model Productstock {
   howbuy           Int
   howsold          Int
   product_id       Int
+  discon           Float?
   ppn              Float?
   product          Product       @relation(fields: [product_id], references: [id_product])
   wherepurchase_id Int
@@ -75,37 +83,42 @@ model Productstock {
 }
 
 model Log {
-  id_log              Int                    @id @default(autoincrement())
+  id_log              Int              @id @default(autoincrement())
   statusenabled       Boolean
-  created_at          DateTime               @default(now())
-  updated_at          DateTime               @updatedAt
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
   activityemployee_id Int
-  activityemployee    Activityemployeestatus @relation(fields: [activityemployee_id], references: [id_activityemployee])
-  location_id         Int
-  location            Location               @relation(fields: [location_id], references: [id_location])
+  activityemployee    Activityemployee @relation(fields: [activityemployee_id], references: [id_activityemployee])
+  employee_id         Int
+  employee            Employee         @relation(fields: [employee_id], references: [id_employee])
+  location_id         Int?
+  location            Location?        @relation(fields: [location_id], references: [id_location])
+  product_id          Int?
+  product             Product?         @relation(fields: [product_id], references: [id_product])
   description         String?
+  data                Json
 
   @@map("log")
 }
 
 model Logstock {
-  id_logstock         Int                    @id @default(autoincrement())
+  id_logstock         Int              @id @default(autoincrement())
   statusenabled       Boolean
-  created_at          DateTime               @default(now())
-  updated_at          DateTime               @updatedAt
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
   location_id         Int
-  location            Location               @relation(fields: [location_id], references: [id_location])
+  location            Location         @relation(fields: [location_id], references: [id_location])
   activityemployee_id Int
-  activityemployee    Activityemployeestatus @relation(fields: [activityemployee_id], references: [id_activityemployee])
+  activityemployee    Activityemployee @relation(fields: [activityemployee_id], references: [id_activityemployee])
   stockstart          Int
   stockend            Int
   description         String
   in                  Int
   out                 Int
   product_id          Int
-  product             Product                @relation(fields: [product_id], references: [id_product])
+  product             Product          @relation(fields: [product_id], references: [id_product])
   employee_id         Int
-  employee            Employee               @relation(fields: [employee_id], references: [id_employee])
+  employee            Employee         @relation(fields: [employee_id], references: [id_employee])
 
   @@map("logstock")
 }
@@ -126,16 +139,18 @@ model Location {
   @@map("location")
 }
 
-model Activityemployeestatus {
+model Activityemployee {
   id_activityemployee Int        @id @default(autoincrement())
   statusenabled       Boolean
   created_at          DateTime   @default(now())
   updated_at          DateTime   @updatedAt
   log                 Log[]
   activityemployee    String
+  module_id           Int
+  module              Module     @relation(fields: [module_id], references: [id_module])
   Logstock            Logstock[]
 
-  @@map("activityemployeestatus")
+  @@map("activityemployee")
 }
 
 model Status {
@@ -144,7 +159,7 @@ model Status {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
   status        String
-  code          Int
+  code          Int?
 
   @@map("status")
 }
@@ -155,22 +170,57 @@ model Role {
   created_at    DateTime   @default(now())
   updated_at    DateTime   @updatedAt
   role          String
-  module        Json
+  module_id     Int
+  module        Module     @relation(fields: [module_id], references: [id_module])
   Employee      Employee[]
 
   @@map("role")
 }
 
 model Module {
-  id_module     Int      @id @default(autoincrement())
-  statusenabled Boolean
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-  module        String
-  url           String
-  description   String
+  id_module        Int                @id @default(autoincrement())
+  statusenabled    Boolean
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  module           String
+  Activityemployee Activityemployee[]
+  Linkmodule       Linkmodule[]
+  EmployeeModule   Employeemodule[]
+  Role             Role[]
 
   @@map("module")
+}
+
+model Linkmodule {
+  id_linkmodule  Int              @id @default(autoincrement())
+  statusenabled  Boolean
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  submodule      String
+  url            String
+  description    String?
+  module_id      Int
+  module         Module           @relation(fields: [module_id], references: [id_module])
+  EmployeeModule Employeemodule[]
+
+  @@map("linkmodule")
+}
+
+model Employeemodule {
+  id_employeemodule Int        @id @default(autoincrement())
+  statusenabled     Boolean
+  created_at        DateTime   @default(now())
+  updated_at        DateTime   @updatedAt
+  linkmodule_id     Int
+  linkmodule        Linkmodule @relation(fields: [linkmodule_id], references: [id_linkmodule])
+  url               String
+  description       String?
+  module_id         Int
+  module            Module     @relation(fields: [module_id], references: [id_module])
+  employee_id       Int
+  employee          Employee   @relation(fields: [employee_id], references: [id_employee])
+
+  @@map("employeemodule")
 }
 
 model Token {
@@ -254,4 +304,18 @@ model Unit {
   product       Product[]
 
   @@map("unit")
+}
+
+model Attachment {
+  id_attachment Int      @id @default(autoincrement())
+  statusenabled Boolean
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  name          String?
+  routename     String
+  route         String?
+  size          String?
+  model         String
+
+  @@map("attachment")
 }

@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import { jwt } from "@elysiajs/jwt";
 import { seed } from "./seed";
 import { auth } from "./auth";
+import { tokenapp } from "./auth/token";
 import { product } from "./product/product";
 
 // import { logstock } from "./stock/logstock";
@@ -14,10 +15,19 @@ const client = new Pool({
 });
 
 const app = new Elysia()
-  .use(swagger())
+  .use(swagger({
+      documentation: {
+        info: {
+          title: 'API Documentation',
+          description: 'Dokumentasi Api',
+          version: '1.0.0',
+        },
+      },
+    }))
   .use(seed)
   .use(auth)
   .use(product)
+  .use(tokenapp)
   .listen(8000);
 
 console.log(

@@ -4,6 +4,8 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Pool } from "pg";
 import { edenFetch } from '@elysiajs/eden'
+import { savetoken } from './token'
+
 
 const client = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -19,9 +21,9 @@ export const auth = new Elysia()
     })
   )
   .post("/login", async ({ jwt, cookie: { auth },body }) => {
-//     const fetch = await edenFetch('/profile');
-// return fetch;
-    const { employeename, password } = body;
+
+    const { employeename, password, information } = body;
+    
 
     // Cari user berdasarkan employeename dan statusenabled
     const employee = await prisma.employee.findFirst({
@@ -30,6 +32,11 @@ export const auth = new Elysia()
         statusenabled: true,
       },
     });
+    await prisma.token.deleteMany({
+      where:{
+          employee_id: employee.id_employee,
+      }
+    })
     if (employee != undefined) {
       const check = await bcrypt.compare(password, employee.password);
       if (!check) {
@@ -45,12 +52,12 @@ export const auth = new Elysia()
         maxAge: 7 * 86400,
         path: '/profile',
       })
-      await prisma.token.create({
-        data:{
-          statusenabled: true,
-          token: token
-        }
+      const savetokenaa = await savetoken({
+        token: token,
+        employee_id: employee.id_employee,
+        information: information,
       })
+      // return savetokenaa
       // Jika employee ditemukan, lakukan pengecekan password (bisa tambahkan bcrypt)
       return {
         status: "success",
@@ -66,7 +73,7 @@ export const auth = new Elysia()
     }
   })
   .post("/register", async ({ body }) => {
-    const { employeename, password, fullname, location_id } = body;
+    const { employeename, password, fullname, location_id, role_id } = body;
 
     const checkemployee = await prisma.employee.findFirst({
       where: {
@@ -78,7 +85,11 @@ export const auth = new Elysia()
     if (checkemployee == undefined) {
 
       const hashedPassword = await bcrypt.hash(password, 10);
-
+      const role = await client.query(
+        "select id_role,role,linkmodule from role where id_role = $1",
+        [role_id]
+      );
+      // const jsonObject = JSON.parse(role.rows[0].module)
       const newemployee = await prisma.employee.create({
         data: {
           statusenabled: true,
@@ -86,6 +97,10 @@ export const auth = new Elysia()
           location_id: parseInt(location_id),
           employeename: employeename,
           password: hashedPassword,
+          linkmodule: [
+            ...role.rows[0].linkmodule
+          ],
+          role_id: parseInt(role.rows[0].id_role),
         },
       });
       return {
@@ -110,12 +125,17 @@ export const auth = new Elysia()
         }
 
         const employee = await client.query(
-  `SELECT em.id_employee,em.fullname,em.employeename,lo.location, em.location_id
-   FROM employee as em 
-   JOIN location as lo ON lo.id_location = em.location_id 
-   WHERE em.statusenabled = true AND em.employeename = $1`,
-  [profile.employeename]
-);
+          `SELECT em.id_employee,em.fullname,em.employeename,lo.location, em.location_id
+          FROM employee as em 
+          JOIN location as lo ON lo.id_location = em.location_id 
+          WHERE em.statusenabled = true AND em.employeename = $1`,
+          [profile.employeename]
+        );
+        await prisma.token.findMany({
+          where:{
+              employee_id: employee.id_employee,
+          }
+        })
       // return employee.rows;
 
         return {

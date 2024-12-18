@@ -13,6 +13,32 @@ const prisma = new PrismaClient();
 //   constructor(public data: string[] = ["Moonhalo"]) {}
 // }
 export const seed = new Elysia().get("/dummy", async () => {
+  await prisma.module.createMany({
+    data: [
+      {
+        module: "dashboard admin",
+        statusenabled: true,
+      }
+    ],
+  });
+  const module = await client.query(
+    "select id_module,module from module"
+  );
+  await prisma.linkmodule.createMany({
+    data: [
+      {
+        module_id: module.rows[0].id_module,
+        url: "/module/admin",
+        description: "ini dashboard admin",
+        submodule: "Pembuatan Produk",
+        statusenabled: true,
+      }
+    ],
+  });
+  const linkmodule = await client.query(
+    "select lm.id_linkmodule, lm.module_id, m.module, lm.url, lm.description from linkmodule as lm join module as m on m.id_module = lm.module_id"
+  );
+
   const status = await prisma.status.createMany({
     data: [
       {
@@ -41,75 +67,118 @@ export const seed = new Elysia().get("/dummy", async () => {
       },
     ],
   });
-  const role = await prisma.role.createMany({
+
+
+  await prisma.role.createMany({
     data: [
       {
         role: "Super Admin",
         statusenabled: true,
+        module_id: 1
+        // linkmodule: [{
+        //   id_linkmodule: linkmodule.rows[0].id_linkmodule,
+        //   module_id: linkmodule.rows[0].module_id,
+        //   module: linkmodule.rows[0].module,
+        //   submodule: linkmodule.rows[0].submodule,
+        //   url: linkmodule.rows[0].url,
+        //   description: linkmodule.rows[0].description,
+        // }]
       },
+    ],
+  });
+  const role = await client.query(
+    "select id_role,role,linkmodule from role"
+  );
+  await prisma.unit.createMany({
+    data: [
       {
-        role: "Admin",
-        statusenabled: true,
-      },
-      {
-        role: "Pegawai",
+        unit: "PCS",
         statusenabled: true,
       },
     ],
   });
-  const activityemployee = await prisma.activityemployeestatus.createMany({
+  const unitData = await client.query(
+    "select id_unit,unit from unit"
+  );
+  await prisma.wherepurchase.createMany({
+    data: [
+      {
+        market: "Toko abang",
+        description: "Deket toko ibu",
+        statusenabled: true,
+      },
+    ],
+  });
+  const wherepurchase = await client.query(
+    "select id_wherepurchase,market,description from wherepurchase"
+  );
+
+  const activityemployee = await prisma.activityemployee.createMany({
     data: [
       {
         activityemployee: "Pembuatan produk",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Update produk",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Hapus produk",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Menambahkan stok",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Mengurangi stok",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Menambah lokasi",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Menghapus lokasi",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Membuat module",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Menghapus module",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Menambah employee baru",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Update employee",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Update employee oleh",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
       {
         activityemployee: "Non-aktifkan employee",
         statusenabled: true,
+        module_id: module.rows[0].id_module,
       },
     ],
   });
@@ -128,6 +197,15 @@ export const seed = new Elysia().get("/dummy", async () => {
         fullname: faker.internet.userName(),
         statusenabled: true,
         location_id: location.id_location,
+        role_id: role.rows[0].id_role
+        // linkmodule: [{
+        //   id_linkmodule: linkmodule.rows[0].id_linkmodule,
+        //   module_id: linkmodule.rows[0].module_id,
+        //   module: linkmodule.rows[0].module,
+        //   submodule: linkmodule.rows[0].submodule,
+        //   url: linkmodule.rows[0].url,
+        //   description: linkmodule.rows[0].description,
+        // }]
       },
     });
 
@@ -138,6 +216,7 @@ export const seed = new Elysia().get("/dummy", async () => {
         cdproduct: faker.internet.password(), // Generate unique product code
         statusenabled: true,
         employee_id: employee.id_employee, // Relasi ke User
+        unit_id: unitData.rows[0].id_unit
       },
     });
     const product2 = await prisma.product.create({
@@ -146,6 +225,7 @@ export const seed = new Elysia().get("/dummy", async () => {
         cdproduct: faker.internet.password(), // Generate unique product code
         statusenabled: true,
         employee_id: employee.id_employee, // Relasi ke User
+        unit_id: unitData.rows[0].id_unit
       },
     });
 
@@ -155,6 +235,9 @@ export const seed = new Elysia().get("/dummy", async () => {
         stockproduct: 10,
         product_id: product1.id_product,
         location_id: location.id_location,
+        howbuy: 500,
+        howsold: 1000,
+        wherepurchase_id: wherepurchase.rows[0].id_wherepurchase
       },
     });
 
@@ -181,6 +264,9 @@ export const seed = new Elysia().get("/dummy", async () => {
         stockproduct: 10,
         product_id: product1.id_product,
         location_id: location.id_location,
+        howbuy: 500,
+        howsold: 1000,
+        wherepurchase_id: wherepurchase.rows[0].id_wherepurchase
       },
     });
 
@@ -207,6 +293,9 @@ export const seed = new Elysia().get("/dummy", async () => {
         stockproduct: 10,
         product_id: product2.id_product,
         location_id: location.id_location,
+        howbuy: 500,
+        howsold: 1000,
+        wherepurchase_id: wherepurchase.rows[0].id_wherepurchase
       },
     });
 
@@ -233,6 +322,9 @@ export const seed = new Elysia().get("/dummy", async () => {
         stockproduct: 10,
         product_id: product2.id_product,
         location_id: location.id_location,
+        howbuy: 500,
+        howsold: 1000,
+        wherepurchase_id: wherepurchase.rows[0].id_wherepurchase
       },
     });
     const stockproduct4 = await client.query(

@@ -14,6 +14,8 @@ export const log = async (body: any) => {
         location_id: request.location_id,
         description: request.description,
         statusenabled: true,
+        data: request.data,
+        employee_id: request.employee_id,
       },
     });
     return logstock;
