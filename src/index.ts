@@ -1,35 +1,15 @@
-import { Elysia, t } from "elysia";
-import { swagger } from "@elysiajs/swagger";
-import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
-import { jwt } from "@elysiajs/jwt";
-import { seed } from "./seed";
-import { auth } from "./auth";
-import { tokenapp } from "./auth/token";
-import { product } from "./product/product";
+import Elysia, { t } from "elysia";
+import swagger from "@elysiajs/swagger";
+import employee from "./routes/employee";
+import { versionStore } from "./stores/versionStore";
 
-// import { logstock } from "./stock/logstock";
-const prisma = new PrismaClient();
-const client = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+new Elysia({ prefix: "/api" })
+  .use(swagger())
+  .use(versionStore)
+  .use(employee)
 
-const app = new Elysia()
-  .use(swagger({
-      documentation: {
-        info: {
-          title: 'API Documentation',
-          description: 'Dokumentasi Api',
-          version: '1.0.0',
-        },
-      },
-    }))
-  .use(seed)
-  .use(auth)
-  .use(product)
-  .use(tokenapp)
-  .listen(8000);
+  .get("/version", ({ store }) => store.version)
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+  .listen(process.env.PORT!, ({ hostname, port }) =>
+    console.log(`Listening on ${hostname}:${port}`)
+  );
