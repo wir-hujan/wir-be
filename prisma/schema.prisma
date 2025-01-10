@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -32,71 +32,87 @@ model Employee {
   roleId      Int
   role        Role      @relation(fields: [roleId], references: [id])
   store_id    Int
-  createdAt   DateTime? @default(now()) @db.Timestamp(6)
-  createdBy   Int?
-  updatedAt   DateTime? @default(now()) @updatedAt
-  updatedBy   Int?
-  deletedAt   DateTime?
-  deletedBy   Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  created_by  Int?
+  updated_at  DateTime? @default(now()) @updatedAt
+  updated_by  Int?
+  deleted_at  DateTime?
+  deleted_by  Int?
 
   EmployeeAccess EmployeeAccess[]
+
+  @@map("employee")
 }
 
 model Role {
-  id        Int        @id @default(autoincrement())
-  name      String
-  Employee  Employee[]
-  createdAt DateTime   @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime   @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  id         Int        @id @default(autoincrement())
+  name       String
+  Employee   Employee[]
+  isActive   Boolean
+  created_at DateTime?  @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime?  @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
+
+  @@map("role")
 }
 
 model Store {
-  id         Int       @id @default(autoincrement())
-  name       String
-  provinceId Int
-  cityId     Int
-  location   String    @db.Text
-  createdAt  DateTime  @default(now()) @db.Timestamp(6)
-  createdBy  Int
-  updatedAt  DateTime  @default(now()) @updatedAt
-  updatedBy  Int
-  deletedAt  DateTime?
-  deletedBy  Int?
+  id          Int       @id @default(autoincrement())
+  name        String
+  province_id Int
+  city_id     Int
+  location    String    @db.Text
+  isActive    Boolean
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  created_by  Int?
+  updated_at  DateTime? @default(now()) @updatedAt
+  updated_by  Int?
+  deleted_at  DateTime?
+  deleted_by  Int?
 
   ProductInformation ProductInformation[]
   Market             Market[]
+
+  @@map("store")
 }
 
 model Market {
-  id        Int       @id @default(autoincrement())
-  name      String
-  storeId   Int
-  store     Store     @relation(fields: [storeId], references: [id])
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime  @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  id         Int       @id @default(autoincrement())
+  name       String
+  store_id   Int
+  isActive   Boolean
+  store      Store     @relation(fields: [store_id], references: [id])
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
 
   ProductMarket ProductMarket[]
+
+  @@map("market")
 }
 
 model ProductMarket {
-  id        Int       @id @default(autoincrement())
-  price     Int
-  marketId  Int
-  market    Market    @relation(fields: [marketId], references: [id])
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime  @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  id         Int       @id @default(autoincrement())
+  price      Int
+  market_id  Int
+  market     Market    @relation(fields: [market_id], references: [id])
+  product_id Int
+  product    Product   @relation(fields: [product_id], references: [id])
+  isActive   Boolean
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
+
+  @@map("productmarket")
 }
 
 model Product {
@@ -105,81 +121,99 @@ model Product {
   code String @unique
 
   //! enum
-  type      String
-  unitId    Int
-  unit      Unit      @relation(fields: [unitId], references: [id])
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime  @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  type       String
+  unit_id    Int
+  unit       Unit      @relation(fields: [unit_id], references: [id])
+  isActive   Boolean
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
 
   ProductInformation ProductInformation[]
+  ProductMarket      ProductMarket[]
+
+  @@map("product")
 }
 
 model Unit {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime @default(now()) @updatedAt
-  updatedBy Int
+  id         Int       @id @default(autoincrement())
+  name       String
+  isActive   Boolean
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
 
   Product Product[]
+
+  @@map("unit")
 }
 
 model ProductInformation {
-  id        Int       @id @default(autoincrement())
-  productId Int
-  storeId   Int
-  product   Product   @relation(fields: [productId], references: [id])
-  store     Store     @relation(fields: [storeId], references: [id])
-  isActive  Boolean
-  price     Int
-  stock     Int
-  discount  Int
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime  @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  id         Int       @id @default(autoincrement())
+  product_id Int
+  store_id   Int
+  product    Product   @relation(fields: [product_id], references: [id])
+  store      Store     @relation(fields: [store_id], references: [id])
+  isActive   Boolean
+  price      Int
+  stock      Int
+  discount   Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
+
+  @@map("productinformation")
 }
 
 model Module {
-  id        Int       @id @default(autoincrement())
-  name      String
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime  @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  id         Int       @id @default(autoincrement())
+  name       String
+  isActive   Boolean
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
 
-  Submodule Submodule[]
+  @@map("module")
 }
 
 model Submodule {
-  id        Int       @id @default(autoincrement())
-  name      String
-  url       String    @db.Text
-  moduleId  Int
-  module    Module    @relation(fields: [moduleId], references: [id])
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  createdBy Int
-  updatedAt DateTime  @default(now()) @updatedAt
-  updatedBy Int
-  deletedAt DateTime?
-  deletedBy Int?
+  id         Int       @id @default(autoincrement())
+  name       String
+  url        String    @db.Text
+  module_id  Int
+  isActive   Boolean
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  created_by Int?
+  updated_at DateTime? @default(now()) @updatedAt
+  updated_by Int?
+  deleted_at DateTime?
+  deleted_by Int?
 
-  EmployeeAccess EmployeeAccess[]
+  @@map("submodule")
 }
 
 model EmployeeAccess {
-  id          Int       @id @default(autoincrement())
-  submoduleId Int
-  employeeId  Int
-  submodule   Submodule @relation(fields: [submoduleId], references: [id])
-  employee    Employee  @relation(fields: [employeeId], references: [id])
+  id           Int       @id @default(autoincrement())
+  submodule_id Int
+  employee_id  Int
+  employee     Employee  @relation(fields: [employee_id], references: [id])
+  isActive     Boolean
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  created_by   Int?
+  updated_at   DateTime? @default(now()) @updatedAt
+  updated_by   Int?
+  deleted_at   DateTime?
+  deleted_by   Int?
+
+  @@map("employeeaccess")
 }
