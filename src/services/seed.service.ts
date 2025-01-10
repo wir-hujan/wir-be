@@ -182,7 +182,7 @@ export class dummy {
                 updated_by: 1,
                 name: faker.internet.userName(),
                 username: simpleFaker.string.uuid(),
-                password: "asdsa",
+                password: bcrypt.hashSync('password', 10),
                 store_id: storeId,
                 roleId: roleId,
                 token: faker.internet.userName(),
