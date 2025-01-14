@@ -24,7 +24,6 @@ export class h {
             select: {
                 id: true,
                 username: true,
-                password: true,
                 name: true,
                 loginDevice: true,
                 store_id: true,

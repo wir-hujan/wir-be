@@ -98,20 +98,19 @@ export const auth = new Elysia({ prefix: "/auth" })
             auth: t.String()
         })
     })
-    .post('/logout/post', async ({ cookie: { auth }, body }) => {
+    .post('/logout/post', async ({ jwt, cookie: { auth } }) => {
         const helper = new h()
-        const findEmployee = await helper.findEmployeeUsername(body.username)
+        const secret = Bun.env.SECRET_TOKEN;
+        const dataToken = await jwt.verify(auth.value, secret)
+        const findEmployee = await helper.findEmployeeToken(auth.value)
         if (findEmployee !== null) {
-            await helper.updateTokenEmployee(body.username)
+            await helper.updateTokenEmployee(findEmployee.username)
         }
         auth.remove()
         return {
             message: "Berhasil logout"
         }
     }, {
-        body: t.Object({
-            username: t.String()
-        }),
         cookie: t.Cookie({
             auth: t.String()
         })
