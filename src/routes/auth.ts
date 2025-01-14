@@ -20,15 +20,16 @@ export const auth = new Elysia({ prefix: "/auth" })
                     value: await jwt.sign(findEmployee)
                 })
                 await helper.updateTokenEmployee(body.username, auth.value)
-                return auth.value;
+                return {
+                    token: auth.value,
+                    message: "Login berhasil"
+                };
             }
             return {
-                code: 500,
                 message: "Username tidak ditemukan"
             }
         }
         return {
-            code: 500,
             message: "Username tidak ditemukan"
         }
     }, {
@@ -45,16 +46,22 @@ export const auth = new Elysia({ prefix: "/auth" })
             const checkTokenLoginDB = await helper.findEmployeeToken(auth.value)
             // return checkTokenLoginDB == null
             if (checkTokenLoginDB != null) {
-                return auth.value
+                return {
+                    token: auth.value,
+                }
             } else {
                 await helper.updateTokenEmployee(dataToken.username)
                 auth.remove()
-                return "Token tidak di kenali"
+                return {
+                    message: "Token tidak di kenali"
+                }
             }
 
         } else {
             auth.remove()
-            return "Token tidak di kenali"
+            return {
+                message: "Token tidak di kenali"
+            }
         }
     }, {
         cookie: t.Cookie({
@@ -73,12 +80,18 @@ export const auth = new Elysia({ prefix: "/auth" })
                 await helper.updateTokenEmployee(dataToken.username)
                 auth.remove()
 
-                return "Token tidak di kenali"
+                return {
+                    message: {
+                        message: "Token tidak di kenali"
+                    }
+                }
             }
 
         } else {
             auth.remove()
-            return "Token tidak di kenali"
+            return {
+                message: "Token tidak di kenali"
+            }
         }
     }, {
         cookie: t.Cookie({
@@ -92,7 +105,9 @@ export const auth = new Elysia({ prefix: "/auth" })
             await helper.updateTokenEmployee(body.username)
         }
         auth.remove()
-        return "Berhasil logout"
+        return {
+            message: "Berhasil logout"
+        }
     }, {
         body: t.Object({
             username: t.String()
