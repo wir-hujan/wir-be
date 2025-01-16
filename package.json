@@ -20,6 +20,7 @@
     "mock-aws-s3": "^4.0.2",
     "nock": "^13.5.5",
     "pg": "^8.13.0",
+    "superjson": "^2.2.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "ua-parser-js": "^1.0.39"
