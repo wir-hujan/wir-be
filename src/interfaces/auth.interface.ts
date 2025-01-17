@@ -1,4 +1,4 @@
-export interface authFormat {
+export interface AuthFormat {
     username: string,
     password: string,
     information: string

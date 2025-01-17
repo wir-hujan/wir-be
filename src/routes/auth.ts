@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { jwt } from '@elysiajs/jwt';
 import { h } from "../services/h.service";
-import { authFormat, employeeFormat } from "../interfaces/auth.interface";
+import { AuthFormat, employeeFormat } from "../interfaces/auth.interface";
 
 
 export const auth = new Elysia({ prefix: "/auth" })
